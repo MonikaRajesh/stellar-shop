@@ -1,7 +1,0 @@
--- IMPORTANT: Supabase hosted projects do not expose the "Confirm email"
--- setting through normal SQL. Disable it in:
--- Supabase Dashboard -> Authentication -> Providers -> Email -> Confirm email OFF
---
--- Supabase documents that disabling Confirm email implicitly confirms users
--- and allows password sign-in without an email verification step.
--- Do NOT add a custom trigger to auth.users just to bypass confirmation.

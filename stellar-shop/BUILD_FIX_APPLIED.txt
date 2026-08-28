@@ -1,0 +1,2 @@
+STELLAR SHOP BUILD FIX v2
+Fixes TS2322 in src/utils/productCatalog.ts:151 by returning a string from productFallbackImage.

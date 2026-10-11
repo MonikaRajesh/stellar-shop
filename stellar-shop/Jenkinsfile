@@ -71,7 +71,7 @@ pipeline {
 
         stage('Validate Vercel Token') {
             steps {
-                echo 'Checking Vercel token configuration...'
+                echo 'Validating Vercel token configuration...'
 
                 sh '''
                     if [ -z "$VERCEL_TOKEN" ]; then
@@ -92,7 +92,7 @@ pipeline {
 
         stage('Check Vercel Authentication') {
             steps {
-                echo 'Checking Vercel team access...'
+                echo 'Checking Vercel token and team access...'
 
                 sh '''
                     npx --yes vercel teams ls \

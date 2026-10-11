@@ -9,14 +9,27 @@ pipeline {
 
         stage('Checkout') {
             steps {
-                checkout scm
+                echo 'Checking out source code...'
+
+                git branch: 'main',
+                    url: 'https://github.com/MonikaRajesh/stellar-shop'
+            }
+        }
+
+        stage('Check Project Structure') {
+            steps {
+                echo 'Checking repository files...'
+                sh 'pwd'
+                sh 'ls -la'
+                sh 'find . -maxdepth 3 -name package.json'
             }
         }
 
         stage('Install Dependencies') {
             steps {
                 dir('stellar-shop') {
-                    sh 'npm ci'
+                    echo 'Installing dependencies...'
+                    sh 'npm install'
                 }
             }
         }
@@ -24,6 +37,7 @@ pipeline {
         stage('Build') {
             steps {
                 dir('stellar-shop') {
+                    echo 'Building the application...'
                     sh 'npm run build'
                 }
             }
@@ -32,7 +46,11 @@ pipeline {
         stage('Deploy to Vercel') {
             steps {
                 dir('stellar-shop') {
-                    sh 'npx vercel --prod --yes --token="$VERCEL_TOKEN"'
+                    echo 'Deploying to Vercel...'
+
+                    sh '''
+                        npx vercel deploy --prod --yes --token "$VERCEL_TOKEN"
+                    '''
                 }
             }
         }
@@ -40,11 +58,18 @@ pipeline {
 
     post {
         success {
-            echo 'CI/CD PIPELINE SUCCESSFUL'
+            echo 'CI/CD PIPELINE SUCCESSFUL!'
+            echo 'Application deployed successfully.'
         }
 
         failure {
-            echo 'CI/CD PIPELINE FAILED'
+            echo 'CI/CD PIPELINE FAILED!'
+            echo 'Check the Console Output for details.'
+        }
+
+        always {
+            echo 'Pipeline execution completed.'
         }
     }
 }
+

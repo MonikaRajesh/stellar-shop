@@ -60,7 +60,7 @@ pipeline {
         stage('Build') {
             steps {
                 dir('stellar-shop') {
-                    echo 'Building React application...'
+                    echo 'Building the React application...'
 
                     sh 'npm run build'
 
@@ -71,7 +71,7 @@ pipeline {
 
         stage('Validate Vercel Token') {
             steps {
-                echo 'Validating Vercel authentication...'
+                echo 'Checking Vercel token configuration...'
 
                 sh '''
                     if [ -z "$VERCEL_TOKEN" ]; then
@@ -79,7 +79,8 @@ pipeline {
                         exit 1
                     fi
 
-                    if printf '%s' "$VERCEL_TOKEN" | grep -q '[[:space:]]'; then
+                    if printf '%s' "$VERCEL_TOKEN" |
+                        grep -q '[[:space:]]'; then
                         echo "ERROR: Vercel token contains whitespace."
                         exit 1
                     fi
@@ -91,10 +92,10 @@ pipeline {
 
         stage('Check Vercel Authentication') {
             steps {
-                echo 'Checking Vercel account authentication...'
+                echo 'Checking Vercel team access...'
 
                 sh '''
-                    npx --yes vercel whoami \
+                    npx --yes vercel teams ls \
                         --token "$VERCEL_TOKEN"
                 '''
             }

@@ -9,14 +9,50 @@ pipeline {
 
         stage('Checkout') {
             steps {
-                checkout scm
+                echo 'Checking out source code from GitHub...'
+
+                git branch: 'main',
+                    url: 'https://github.com/MonikaRajesh/stellar-shop'
+            }
+        }
+
+        stage('Check Project') {
+            steps {
+                dir('stellar-shop') {
+                    echo 'Checking project files...'
+
+                    sh 'pwd'
+                    sh 'ls -la'
+
+                    sh '''
+                        if [ ! -f package.json ]; then
+                            echo "ERROR: package.json not found!"
+                            exit 1
+                        fi
+
+                        echo "Project files verified successfully."
+                    '''
+                }
+            }
+        }
+
+        stage('Check Node Version') {
+            steps {
+                dir('stellar-shop') {
+                    echo 'Checking Node.js and npm versions...'
+
+                    sh 'node --version'
+                    sh 'npm --version'
+                }
             }
         }
 
         stage('Install Dependencies') {
             steps {
                 dir('stellar-shop') {
-                    sh 'npm ci'
+                    echo 'Installing project dependencies...'
+
+                    sh 'npm install'
                 }
             }
         }
@@ -24,15 +60,57 @@ pipeline {
         stage('Build') {
             steps {
                 dir('stellar-shop') {
+                    echo 'Building React application...'
+
                     sh 'npm run build'
+
+                    echo 'Build completed successfully.'
                 }
+            }
+        }
+
+        stage('Validate Vercel Token') {
+            steps {
+                echo 'Validating Vercel authentication...'
+
+                sh '''
+                    if [ -z "$VERCEL_TOKEN" ]; then
+                        echo "ERROR: Vercel token is empty."
+                        exit 1
+                    fi
+
+                    if printf '%s' "$VERCEL_TOKEN" | grep -q '[[:space:]]'; then
+                        echo "ERROR: Vercel token contains whitespace."
+                        exit 1
+                    fi
+
+                    echo "Token format check passed."
+                '''
+            }
+        }
+
+        stage('Check Vercel Authentication') {
+            steps {
+                echo 'Checking Vercel account authentication...'
+
+                sh '''
+                    npx --yes vercel whoami \
+                        --token "$VERCEL_TOKEN"
+                '''
             }
         }
 
         stage('Deploy to Vercel') {
             steps {
                 dir('stellar-shop') {
-                    sh 'npx vercel --prod --yes --token="$VERCEL_TOKEN"'
+                    echo 'Deploying application to Vercel...'
+
+                    sh '''
+                        npx --yes vercel deploy \
+                            --prod \
+                            --yes \
+                            --token "$VERCEL_TOKEN"
+                    '''
                 }
             }
         }
@@ -40,11 +118,25 @@ pipeline {
 
     post {
         success {
-            echo 'CI/CD PIPELINE SUCCESSFUL'
+            echo '''
+            ========================================
+            CI/CD PIPELINE SUCCESSFUL!
+            Application deployed to Vercel.
+            ========================================
+            '''
         }
 
         failure {
-            echo 'CI/CD PIPELINE FAILED'
+            echo '''
+            ========================================
+            CI/CD PIPELINE FAILED!
+            Check Console Output for the failed stage.
+            ========================================
+            '''
+        }
+
+        always {
+            echo 'Pipeline execution completed.'
         }
     }
 }
